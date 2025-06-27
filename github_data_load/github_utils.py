@@ -29,7 +29,43 @@ def merge_pull_request( repoConnection, baseBranch='master', headBranch=None ):
 
         elif not headBranch:
             pull.merge("Automatic merge")
-        
+
+
+def add_review( repoConnection, baseBranch='master', headBranch=None ):
+    """
+        Params:
+            repoConnection ( Required Object ): Object from Github library with all required credentials
+            baseBranch (optional string): Filter
+    """
+    pulls = repoConnection.get_pulls( state='open', sort='created', base=baseBranch )
+    
+    for pull in pulls:
+
+        if headBranch and headBranch in pull.head.label:
+            pull.create_review(
+                body="Review with inline comments",
+                event="COMMENT",
+                comments=[
+                    {
+                        "path": "dora_metrics_log.log",
+                        "position": 2,
+                        "body": "Defect #1"
+                    }
+                ]
+            )
+
+        elif not headBranch:
+            pull.create_review(
+                body="Review with inline comments",
+                event="COMMENT",
+                comments=[
+                    {
+                        "path": "dora_metrics_log.log",
+                        "position": 2,
+                        "body": "Defect #1"
+                    }
+                ]
+            )
 
 
 def verify_branch_exists(repoConnection, branchToverify: str, logErrors=False):
@@ -113,7 +149,7 @@ def create_commit( repoConnection, commitName="Automatic Commit", branch="master
 
 
 
-def create_pull_request( repoConnection, headBranch, baseBranch='master', body="Body exmaple", logErrors=False ):
+def create_pull_request( repoConnection, headBranch, baseBranch='master', body="Body exmaple", reviewers=[], logErrors=False ):
     """
         - MAKE SURE YOU ALREADY COMMITED SOMETHING IN THE BRANCH BEFORE EXECUTING A PR
         - make sure this branch exists and has no conflicts at the time of creating the PR
@@ -126,7 +162,9 @@ def create_pull_request( repoConnection, headBranch, baseBranch='master', body="
     try:
         
         pullReqName = f"Automatic PR - {time.asctime()}"
-        repoConnection.create_pull(title=pullReqName, body=body, head=headBranch, base=baseBranch )
+        pr = repoConnection.create_pull(title=pullReqName, body=body, head=headBranch, base=baseBranch )
+        if reviewers:
+            pr.create_review_request(reviewers=reviewers)
         return True, ""
         
     except BaseException as error:
