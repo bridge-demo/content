@@ -2,14 +2,17 @@ from github_utils import *
 import time
 import argparse
 
-def parser( ) -> dict:
+
+def parser() -> dict:
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--token", help="<Optional> Github Token")
+    parser.add_argument("-w", "--reviewer", help="<Optional> Github Token")
     parser.add_argument( '-r', "--repository",   help='<Required> repository name \Format: "mariobv/samplerepo"', required=True )
     values = parser.parse_args()
     return {
         "gitHubToken" : values.token,
-        "repo" : values.repository
+        "repo" : values.repository,
+        "reviewer": values.reviewer
     }
 
 
@@ -36,7 +39,7 @@ def main():
         raise Exception("Unable to create issue")
 
     #Commit something to 'automation-branch'
-    _, errorMessage = create_commit( repoConnection, "Autmatic commit from jenkins dora metrics", "automation-branch", fileToLog="dora_metrics_log.log", logErrors=True  )
+    _, errorMessage = create_commit( repoConnection, "Automatic commit from jenkins dora metrics", "automation-branch", fileToLog="dora_metrics_log.log", logErrors=True  )
     if errorMessage:
 
         exit(1)
@@ -44,7 +47,8 @@ def main():
 
     #create PR from 'automation-branch' to 'master'
     bodyDescription = f"https://github.com/{setup['repo']}/issues/{storyIssueNumber}"
-    create_pull_request( repoConnection, headBranch="automation-branch", baseBranch="master", body=bodyDescription, logErrors=True )
+    create_pull_request( repoConnection, headBranch="automation-branch", baseBranch="master",
+                         body=bodyDescription, reviewers=[setup['reviewer']], logErrors=True )
 
 
 
