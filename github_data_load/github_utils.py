@@ -172,7 +172,7 @@ def create_pull_request( repoConnection, headBranch, baseBranch='master', body="
             print(error)
         return False, str(error)
 
-def create_issue( repoConnection, labels=[], title="issue creted from python", log_errors=False, description="Default Description" ) -> str:
+def create_issue( repoConnection, labels=[], title="issue created from python", log_errors=False, description="Default Description" ) -> str:
     """
         Params:
             repoConnection ( Required Object ): Object from Github library with all required credentials
